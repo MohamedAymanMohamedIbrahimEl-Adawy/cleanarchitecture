@@ -15,6 +15,8 @@ class Body extends StatelessWidget {
       TeamMember(name: 'Ali', role: 'Backend Developer', online: true),
       TeamMember(name: 'Said', role: 'Quanilty Controller', online: false),
       TeamMember(name: 'Nour', role: 'UI UX', online: false),
+
+      TeamMember(name: 'Said', role: 'Quanilty Controller', online: true),
     ];
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -26,10 +28,11 @@ class Body extends StatelessWidget {
             const SizedBox(height: 12),
             SizedBox(
               height: 100,
-              child: ListView.separated(
+              child: ListView.builder(
                 shrinkWrap: true,
                 scrollDirection: Axis.horizontal,
-                separatorBuilder: (context, index) => SizedBox(width: 10),
+                padding: EdgeInsets.zero,
+                // separatorBuilder: (context, index) => SizedBox(width: 10),
                 itemCount: members.length,
                 itemBuilder: (context, i) => TeamMemberCard(member: members[i]),
               ),

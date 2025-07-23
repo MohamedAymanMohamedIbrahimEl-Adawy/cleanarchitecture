@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sizer/sizer.dart';
 
 import '../../../data/model/team_member_model.dart';
 
@@ -10,27 +11,27 @@ class TeamMemberCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Column(
-          children: [
-            CircleAvatar(radius: 28, child: Text(member.name[0])),
-            const SizedBox(height: 4),
-            Text(member.name, style: const TextStyle(fontSize: 12)),
-            Text(
-              member.role,
-              style: Theme.of(
-                context,
-              ).textTheme.labelMedium?.copyWith(color: Colors.grey),
-            ),
-          ],
-        ),
-        Positioned(
-          top: 0,
-          right: 14,
-          child: Icon(
-            member.online ? Icons.circle : Icons.circle_outlined,
-            color: member.online ? Colors.green : Colors.red,
-            size: 10,
+        SizedBox(
+          width: 22.w,
+          child: Column(
+            children: [
+              CircleAvatar(radius: 28, child: Text(member.name[0])),
+              const SizedBox(height: 4),
+              Text(member.name, style: const TextStyle(fontSize: 12)),
+              Text(
+                member.role,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelMedium?.copyWith(color: Colors.grey),
+              ),
+            ],
           ),
+        ),
+        const Positioned(
+          top: 0,
+          right: 16,
+          child: Icon(Icons.circle, color: Colors.green, size: 10),
         ),
       ],
     );
