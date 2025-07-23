@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:cleanarchitecture/core/base_network/client/dio_client.dart';
+import 'package:cleanarchitecture/core/services/base_network/client/dio_client.dart';
 import 'package:cleanarchitecture/core/component/inspector/inspector_model.dart';
 import 'package:cleanarchitecture/core/data/constants/shared_preferences_constants.dart';
 import 'package:cleanarchitecture/core/services/log/app_log.dart';
-import '../../services/local_storage/secure_storage/secure_storage_service.dart';
+import '../../local_storage/secure_storage/secure_storage_service.dart';
 
 List<InspectorModel> inspectList = [];
 InspectorModel? inspectorModel;

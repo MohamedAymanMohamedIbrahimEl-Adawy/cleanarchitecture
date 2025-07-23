@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cleanarchitecture/core/base_network/api_endpoints_constants.dart';
-import 'package:cleanarchitecture/core/base_network/client/dio_client.dart';
-import 'package:cleanarchitecture/core/base_network/error/handler/error_model.dart';
+import 'package:cleanarchitecture/core/services/base_network/api_endpoints_constants.dart';
+import 'package:cleanarchitecture/core/services/base_network/client/dio_client.dart';
+import 'package:cleanarchitecture/core/services/base_network/error/handler/error_model.dart';
 import 'package:cleanarchitecture/core/component/custom_toast/p_toast.dart';
 import 'package:cleanarchitecture/core/data/constants/app_router.dart';
 import 'package:cleanarchitecture/core/data/constants/global_obj.dart';
@@ -13,7 +13,7 @@ import 'package:cleanarchitecture/core/global/enums/global_enum.dart';
 import 'package:cleanarchitecture/core/services/flavorizer/flavors_managment.dart';
 import 'package:cleanarchitecture/core/services/local_storage/secure_storage/secure_storage_service.dart';
 
-import '../../global/global_func.dart';
+import '../../../global/global_func.dart';
 
 class TokenInterceptor extends InterceptorsWrapper {
   final Dio dio;

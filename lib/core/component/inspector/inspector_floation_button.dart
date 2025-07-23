@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cleanarchitecture/core/base_network/interceptors/request_interceptor.dart';
+import 'package:cleanarchitecture/core/services/base_network/interceptors/request_interceptor.dart';
 import 'package:cleanarchitecture/core/component/button/p_button.dart';
 import 'package:cleanarchitecture/core/component/button/p_floating_action_button.dart';
 import 'package:cleanarchitecture/core/component/inspector/inspector_screen.dart';

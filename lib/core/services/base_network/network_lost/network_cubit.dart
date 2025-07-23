@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:cleanarchitecture/core/services/flavorizer/flavors_managment.dart';
 
-import '../../component/custom_toast/p_toast.dart';
-import '../../global/enums/global_enum.dart';
-import '../../services/log/app_log.dart';
+import '../../../component/custom_toast/p_toast.dart';
+import '../../../global/enums/global_enum.dart';
+import '../../log/app_log.dart';
 
 enum NetworkStatus { initial, online, offline }
 

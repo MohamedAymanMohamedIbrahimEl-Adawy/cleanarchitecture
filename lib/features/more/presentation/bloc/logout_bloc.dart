@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cleanarchitecture/core/base_network/client/dio_client.dart';
+import 'package:cleanarchitecture/core/services/base_network/client/dio_client.dart';
 import 'package:cleanarchitecture/core/data/constants/app_router.dart';
 import 'package:cleanarchitecture/core/data/constants/global_obj.dart';
 import 'package:cleanarchitecture/core/global/state/base_state.dart';

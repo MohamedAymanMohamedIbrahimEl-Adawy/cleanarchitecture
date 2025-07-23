@@ -1,10 +1,10 @@
 import 'package:dartz/dartz.dart';
-import 'package:cleanarchitecture/core/base_network/api_endpoints_constants.dart';
-import 'package:cleanarchitecture/core/base_network/network_repository.dart';
+import 'package:cleanarchitecture/core/services/base_network/api_endpoints_constants.dart';
+import 'package:cleanarchitecture/core/services/base_network/network_repository.dart';
 import 'package:cleanarchitecture/features/more/data/model/logout_response_model.dart';
 import 'package:cleanarchitecture/features/more/domain/repository/logout_repo.dart';
 
-import '../../../../core/base_network/general_response_model.dart';
+import '../../../../core/services/base_network/general_response_model.dart';
 
 class LogoutRepositoryImpl extends MainRepository implements LogoutRepository {
   LogoutRepositoryImpl({

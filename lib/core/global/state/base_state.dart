@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:equatable/equatable.dart';
 
-import 'package:cleanarchitecture/core/base_network/error/handler/error_model.dart';
+import 'package:cleanarchitecture/core/services/base_network/error/handler/error_model.dart';
 
 abstract class BaseState extends Equatable {
   const BaseState();

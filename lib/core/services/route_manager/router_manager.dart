@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cleanarchitecture/core/base_network/interceptors/request_interceptor.dart';
-import 'package:cleanarchitecture/core/base_network/network_lost/widget/network_lost_widget.dart';
+import 'package:cleanarchitecture/core/services/base_network/interceptors/request_interceptor.dart';
+import 'package:cleanarchitecture/core/services/base_network/network_lost/widget/network_lost_widget.dart';
 import 'package:cleanarchitecture/core/component/inspector/inspector_screen.dart';
 import 'package:cleanarchitecture/core/data/constants/app_router.dart';
 import 'package:cleanarchitecture/core/data/constants/global_obj.dart';

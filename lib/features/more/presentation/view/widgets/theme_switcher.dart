@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/global/global_func.dart';
-import '../../../../../core/theme/theme_cubit.dart';
+import '../../../../../core/services/theme/theme_cubit.dart';
 
 class ThemeSwitcherButton extends StatelessWidget {
   const ThemeSwitcherButton({super.key});

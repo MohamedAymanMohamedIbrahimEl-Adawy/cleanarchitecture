@@ -1,4 +1,4 @@
-import 'package:cleanarchitecture/core/base_network/error/handler/exception_enum.dart';
+import 'package:cleanarchitecture/core/services/base_network/error/handler/exception_enum.dart';
 
 import '../handler/error_handler.dart';
 
