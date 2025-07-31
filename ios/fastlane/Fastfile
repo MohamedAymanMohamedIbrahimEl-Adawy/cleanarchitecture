@@ -1,38 +1,77 @@
 default_platform(:ios)
 
 platform :ios do
+  ############################################
+  # 🔧 إعداد Xcode المطلوب (اختياري حسب CI)
+  ############################################
+  private_lane :use_xcode do
+    UI.header("🔧 Selecting Xcode 16.2")
+    xcode_select("/Applications/Xcode_16.2.app")
+  end
 
-  desc "📱 Build and upload dev flavor to TestFlight"
+  ############################################
+  # 🔐 Lane عام لتوقيع الشهادات
+  ############################################
+  private_lane :setup_code_signing do |options|
+    type = options[:type] || "appstore" # أو development
+    match(
+      type: type,
+      readonly: true, # اجعله true في CI
+      app_identifier: options[:app_identifier]
+    )
+  end
+
+  ############################################
+  # 🍎 Lane لتوزيع dev
+  ############################################
   lane :dev do
-    match(type: "appstore", readonly: true)
-    build_app(
-      scheme: "dev",
-      configuration: "Release-dev",
-      export_method: "app-store"
+    use_xcode
+
+    setup_code_signing(
+      type: "appstore",
+      app_identifier: "com.flutter.structure.dev"
     )
-    upload_to_testflight
+
+    sh("flutter build ios --release --flavor dev")
+
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true
+    )
   end
 
-  desc "📱 Build and upload stage flavor to TestFlight"
+  ############################################
+  # 🍎 Lane لتوزيع stage
+  ############################################
   lane :stage do
-    match(type: "appstore", readonly: true)
-    build_app(
-      scheme: "stage",
-      configuration: "Release-stage",
-      export_method: "app-store"
+    use_xcode
+
+    setup_code_signing(
+      type: "appstore",
+      app_identifier: "com.flutter.structure.stage"
     )
-    upload_to_testflight
+
+    sh("flutter build ios --release --flavor stage")
+
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true
+    )
   end
 
-  desc "📱 Build and upload prod flavor to TestFlight"
+  ############################################
+  # 🍎 Lane لتوزيع prod
+  ############################################
   lane :prod do
-    match(type: "appstore", readonly: true)
-    build_app(
-      scheme: "prod",
-      configuration: "Release-prod",
-      export_method: "app-store"
-    )
-    upload_to_testflight
-  end
+    use_xcode
 
+    setup_code_signing(
+      type: "appstore",
+      app_identifier: "com.flutter.structure.prod"
+    )
+
+    sh("flutter build ios --release --flavor prod")
+
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true
+    )
+  end
 end
