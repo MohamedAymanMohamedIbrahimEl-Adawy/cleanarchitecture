@@ -1,0 +1,10 @@
+git_url("https://github.com/MohamedAymanMohamedIbrahimEl-Adawy/fastlane-certificates")
+
+app_identifier([
+  "com.flutter.structure.dev",
+  "com.flutter.structure.stage",
+  "com.flutter.structure.prod"
+])
+
+username("mohamedadawy89.moadawy@gmail.com")
+team_id("87V3Z3FS47")
