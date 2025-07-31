@@ -1,4 +1,4 @@
-name: 🍎 iOS CI/CD
+name: 🍎 iOS CI/CD Flutter
 
 on:
   workflow_dispatch:
