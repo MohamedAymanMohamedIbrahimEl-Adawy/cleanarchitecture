@@ -27,12 +27,16 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
 
-      - name: 🔐 Setup SSH key for match
+      - name: 🔐 Setup SSH for Fastlane Match
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.MATCH_GIT_PRIVATE_KEY }}" | base64 --decode > ~/.ssh/match_fastlane
           chmod 600 ~/.ssh/match_fastlane
-          echo "Host github.com\n  IdentityFile ~/.ssh/match_fastlane\n  StrictHostKeyChecking no" >> ~/.ssh/config
+          echo "Host github.com
+            HostName github.com
+            IdentityFile ~/.ssh/match_fastlane
+            IdentitiesOnly yes" >> ~/.ssh/config
+
 
       - name: 📥 Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -50,4 +54,3 @@ jobs:
           MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
           MATCH_TYPE: appstore
 
-          
