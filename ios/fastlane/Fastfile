@@ -1,0 +1,38 @@
+default_platform(:ios)
+
+platform :ios do
+
+  desc "📱 Build and upload dev flavor to TestFlight"
+  lane :dev do
+    match(type: "appstore", readonly: true)
+    build_app(
+      scheme: "dev",
+      configuration: "Release-dev",
+      export_method: "app-store"
+    )
+    upload_to_testflight
+  end
+
+  desc "📱 Build and upload stage flavor to TestFlight"
+  lane :stage do
+    match(type: "appstore", readonly: true)
+    build_app(
+      scheme: "stage",
+      configuration: "Release-stage",
+      export_method: "app-store"
+    )
+    upload_to_testflight
+  end
+
+  desc "📱 Build and upload prod flavor to TestFlight"
+  lane :prod do
+    match(type: "appstore", readonly: true)
+    build_app(
+      scheme: "prod",
+      configuration: "Release-prod",
+      export_method: "app-store"
+    )
+    upload_to_testflight
+  end
+
+end

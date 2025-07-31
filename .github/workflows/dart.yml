@@ -1,0 +1,829 @@
+# name: 🚀 Clean Architecture CI/CD
+
+# on:
+#   push:
+#     branches: ["master"]
+#   pull_request:
+#     branches: ["master"]
+
+# jobs:
+#   android:
+#     name: 🤖 Android Build & Deploy
+#     runs-on: macos-latest
+
+#     steps:
+#       # ✅ 1. Checkout source code
+#       - name: 🔄 Checkout code
+#         uses: actions/checkout@v4
+
+#       # ✅ 2. Setup Flutter SDK
+#       - name: ⚙️ Setup Flutter
+#         uses: subosito/flutter-action@v2
+#         with:
+#           flutter-version: '3.32.8'
+
+#       # ✅ 3. Install dependencies
+#       - name: 📥 Install dependencies
+#         run: flutter pub get
+
+#       # ✅ 4. Run static analysis
+#       - name: 🔍 Analyze code
+#         run: flutter analyze
+
+#       # ✅ 5. Run unit tests
+#       - name: ✅ Run unit tests
+#         run: flutter test
+
+#       # ✅ 6. Android Signing & Firebase Setup
+#       - name: 🔐 Android signing & Firebase setup
+#         run: |
+#           echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
+#           echo "${{ secrets.KEYSTORE }}" | base64 --decode > android/app/key.jks
+#           echo "${{ secrets.ANDROID_GOOGLE_SERVICE_JSON }}" | base64 --decode > android/app/google-services.json
+
+#       # ✅ 7. Build APKs for all flavors
+#       - name: 🤖 Build Dev APK
+#         run: flutter build apk --release --flavor dev
+
+#       - name: 📤 Upload Dev APK
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: release-dev-apk-${{ github.run_number }}
+#           path: build/app/outputs/flutter-apk/app-dev-release.apk
+
+#       - name: 🤖 Build Prod APK
+#         run: flutter build apk --release --flavor prod
+
+#       - name: 📤 Upload Prod APK
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: release-prod-apk-${{ github.run_number }}
+#           path: build/app/outputs/flutter-apk/app-prod-release.apk
+
+#       - name: 🤖 Build Stage APK
+#         run: flutter build apk --release --flavor stage
+
+#       - name: 📤 Upload Stage APK
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: release-stage-apk-${{ github.run_number }}
+#           path: build/app/outputs/flutter-apk/app-stage-release.apk
+
+#       # ✅ 8. Build AAB For Prod Flavor on Github for Play Store
+#       - name: 📦 Build AAB
+#         run: flutter build appbundle --flavor prod
+
+#       - name: 📤 Upload AAB
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: release-appbundle-${{ github.run_number }}
+#           path: build/app/outputs/bundle/prodRelease/app-prod-release.aab
+
+#       # ✅ 9. Decode Firebase service account (base64)
+#       - name: 🔐 Decode Firebase Service Account
+#         run: echo "${{ secrets.FIREBASE_DISTRIBUTION_SERVICE }}" | base64 --decode > firebase-service-account.json
+
+#       # ✅ 10. Upload APKs to Firebase App Distribution
+#       - name: 🚀 Upload DEV APK to Firebase App Distribution
+#         run: |
+#           cd android
+#           fastlane firebase_dev
+
+#       - name: 🚀 Upload STAGe APK to Firebase App Distribution
+#         run: |
+#           cd android
+#           fastlane firebase_stage
+
+#       - name: 🚀 Upload PROD APK to Firebase App Distribution
+#         run: |
+#           cd android
+#           fastlane firebase_prod
+
+#       # ✅ 11. Upload APKs to Firebase App Distribution 
+#       - name: 🔐 Setup Google Play Service Account
+#         run: |
+#           echo "${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}" | base64 --decode > google-play-service-account.json
+
+#       # # ✅ 12. Release to Google Play
+#       # - name: 🚀 Release to Google Play (prod)
+#       #   run: |
+#       #     cd android
+#       #     fastlane release_prod
+
+#   ios:
+#     name: 🍏 iOS Build & TestFlight
+#     runs-on: macos-latest
+#     needs: android
+
+#     strategy:
+#       matrix:
+#         flavor: [dev, stage, prod]
+
+#     steps:
+#       # ✅ 1. Checkout code
+#       - name: 🔄 Checkout code
+#         uses: actions/checkout@v4
+      
+#       # ✅ 2. List all available Xcode versions 
+#       - name: 📍 List available Xcode versions
+#         run: ls -la /Applications | grep Xcode
+
+#       # ✅ 3. Select Xcode version
+#       - name: 📍 Select Xcode 16.2
+#         run: sudo xcode-select -switch /Applications/Xcode_16.2.app/Contents/Developer
+
+#       # ✅ 4. Setup Flutter
+#       - name: ⚙️ Setup Flutter
+#         uses: subosito/flutter-action@v2
+#         with:
+#           flutter-version: '3.32.8'
+
+#       # ✅ 5. Install dependencies
+#       - name: 📥 Install dependencies
+#         run: flutter pub get
+
+#       # ✅ 6. Setup Firebase config (GoogleService-Info.plist)
+#       - name: 🔐 Setup Firebase Config
+#         run: |
+#           mkdir -p ios/Runner/firebase/${{ matrix.flavor }}
+#           if [ "${{ matrix.flavor }}" = "dev" ]; then
+#             echo "${{ secrets.GOOGLE_SERVICE_PLIST_DEV }}" | base64 --decode > ios/Runner/firebase/dev/GoogleService-Info.plist
+#           elif [ "${{ matrix.flavor }}" = "stage" ]; then
+#             echo "${{ secrets.GOOGLE_SERVICE_PLIST_STAGE }}" | base64 --decode > ios/Runner/firebase/stage/GoogleService-Info.plist
+#           elif [ "${{ matrix.flavor }}" = "prod" ]; then
+#             echo "${{ secrets.GOOGLE_SERVICE_PLIST_PROD }}" | base64 --decode > ios/Runner/firebase/prod/GoogleService-Info.plist
+#           fi
+
+#       # ✅ 7. Install CocoaPods
+#       - name: 📦 Install CocoaPods
+#         run: |
+#           cd ios
+#           pod install
+
+#       # ✅ 8. Setup iOS Code Signing
+#       - name: 🔐 Setup iOS Code Signing
+#         run: |
+#           echo "${{ secrets.IOS_DISTRIBUTION_CERTIFICATE }}" | base64 --decode > certificate.p12
+#           security create-keychain -p "temp_pass" ios-build.keychain
+#           security default-keychain -s ios-build.keychain
+#           security unlock-keychain -p "temp_pass" ios-build.keychain
+#           security import certificate.p12 -k ios-build.keychain -P "${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
+#           security set-key-partition-list -S apple-tool:,apple: -s -k "temp_pass" ios-build.keychain
+
+#       # ✅ 9. Install Provisioning Profile
+#       - name: 🧾 Install Provisioning Profile
+#         run: |
+#           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+#           if [ "${{ matrix.flavor }}" = "dev" ]; then
+#             echo "${{ secrets.IOS_PROVISIONING_PROFILE_DEV }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/dev.mobileprovision
+#           elif [ "${{ matrix.flavor }}" = "stage" ]; then
+#             echo "${{ secrets.IOS_PROVISIONING_PROFILE_STAGE }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/stage.mobileprovision
+#           elif [ "${{ matrix.flavor }}" = "prod" ]; then
+#             echo "${{ secrets.IOS_PROVISIONING_PROFILE_PROD }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/prod.mobileprovision
+#           fi
+
+#       # ✅ 10. Clean and Build iOS
+#       - name: 🧹 Clean and Build iOS App
+#         run: |
+#           flutter clean
+#           flutter build ios --release --flavor ${{ matrix.flavor }} --dart-define=FLAVOR=${{ matrix.flavor }}
+
+#       # ✅ 11. Archive and Export IPA
+#       - name: 📦 Export IPA
+#         run: |
+#           mkdir -p build/ios/archive
+#           xcodebuild -workspace ios/Runner.xcworkspace \
+#             -scheme ${{ matrix.flavor }} \
+#             -configuration Release \
+#             -archivePath build/ios/archive/${{ matrix.flavor }}.xcarchive archive
+
+#           xcodebuild -exportArchive \
+#             -archivePath build/ios/archive/${{ matrix.flavor }}.xcarchive \
+#             -exportPath build/ios/ipa/${{ matrix.flavor }} \
+#             -exportOptionsPlist ios/ExportOptions-${{ matrix.flavor }}.plist
+
+#       # ✅ 12. Upload IPA Artifact
+#       - name: 📤 Upload IPA Artifact
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: ios-${{ matrix.flavor }}-ipa-${{ github.run_number }}
+#           path: build/ios/ipa/${{ matrix.flavor }}/Runner.ipa
+
+#       # ✅ 13. Upload to TestFlight via Fastlane
+#       - name: 🚀 Upload to TestFlight via Fastlane
+#         env:
+#           FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.APPLE_ACCOUNT_PASSWORD }}
+#           APPLE_ID: ${{ secrets.APPLE_ID_EMAIL }}
+#         run: |
+#           gem install fastlane
+#           cd ios
+#           fastlane ${{ matrix.flavor }}
+
+name: 🚀 Flutter CI/CD by Adawy
+
+on:
+  push:
+    branches: ["master"]
+  # pull_request:
+  #   branches: ["master"]
+
+env:
+  FLUTTER_VERSION: "3.32.8"
+
+jobs:
+  eployIos:
+    runs-on: macos-latest
+    env:
+      ASC_JSON_KEY: ${{ secrets.ASC_JSON_KEY }}
+      FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+      FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
+      
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v3
+      - name: ⚙️ Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.24.0"
+          channel: 'stable'
+          cache: true
+        id: flutter
+      - name: Update version number from tag
+        run: |
+          # Extract the version components from refs tag (e.g., 1.2.3)
+          TAG_NAME=${{  github.ref_name }}
+          VERSION=${TAG_NAME#v} # Remove the 'v' prefix if it exists
+          echo "FLUTTER_BUILD_NAME=$VERSION" >> $GITHUB_ENV
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          MINOR=$(echo $VERSION | cut -d. -f2)
+          PATCH=$(echo $VERSION | cut -d. -f3)
+          NUMBER=$MAJOR$MINOR$PATCH
+          echo "FLUTTER_BUILD_NUMBER=$NUMBER" >> $GITHUB_ENV
+      - name: 📦 Get Packages
+        run: flutter pub get
+      - name: Setup Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: ios
+      - name: Setup app store connect
+        run: echo "$ASC_JSON_KEY" >> ./ios/fastlane/store.json
+      - name: Install pod
+        run: cd ios && pod install
+      - name: Build and Deploy to TestFlight
+        env:
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+        run: |
+          cd ./ios
+          bundle exec fastlane ios beta
+  # ------------------------
+  # 🍎 iOS Dev Job
+  # ------------------------
+  ios-dev:
+    name: 🍎 iOS Dev
+    runs-on: macos-latest
+
+    steps:
+      # ✅ 1. Checkout code
+      - name: 🔄 Checkout code
+        uses: actions/checkout@v4
+
+      # ✅ 2. List all available Xcode versions 
+      - name: 📍 List available Xcode versions
+        run: ls -la /Applications | grep Xcode
+
+      # ✅ 3. Select Xcode version
+      - name: 📍 Select Xcode 16.2
+        run: sudo xcode-select -switch /Applications/Xcode_16.2.app/Contents/Developer
+
+      # ✅ 4. Setup Flutter
+      - name: 🧩 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      # ✅ 5. Install dependencies
+      - name: 📦 Install dependencies
+        run: flutter pub get
+
+      
+      # ✅ 6. Install CocoaPods
+      - name: 🍫 Install CocoaPods
+        run: |
+          cd ios
+          pod install
+          cd ..
+      
+
+      # ✅ 7. Install provisioning & certificate (Dev)
+      - name: 🔐 Install provisioning & certificate (Dev)
+        run: |
+          echo "📦 Decoding certificate and provisioning profile..."
+          
+          echo "${{ secrets.IOS_DISTRIBUTION_CERTIFICATE }}" | base64 --decode > certificate.p12
+          echo "${{ secrets.IOS_PROVISIONING_PROFILE_DEV }}" | base64 --decode > dev.mobileprovision
+
+          echo "🔑 Creating custom keychain..."
+          security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain
+          security set-keychain-settings -t 3600 -u build.keychain
+          security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain
+
+          echo "📥 Importing certificate into keychain..."
+          security import certificate.p12 -k build.keychain -P "${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
+          security list-keychains -s build.keychain
+          security set-key-partition-list -S apple-tool:,apple: -s -k "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain
+
+          echo "📄 Extracting UUID from provisioning profile..."
+          UUID=$(grep -a -A1 UUID dev.mobileprovision | grep -io "[-A-F0-9]\{36\}" | head -1)
+          echo "📄 Extracted UUID: $UUID"
+          
+          echo "$UUID" > uuid.txt  # ✅ حفظ UUID في ملف مؤقت
+
+          echo "📂 Copying provisioning profile to system path..."
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp dev.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/$UUID.mobileprovision
+
+          echo "✅ Provisioning and certificate setup completed!"
+
+      # ✅ 8. Install bundler & fastlane
+      - name: 🧠 Install bundler & fastlane
+        run: |
+          gem install bundler
+          bundle install
+        working-directory: ios
+
+      # ✅ 9. Upload to TestFlight (Dev)
+      - name: 🚀 Upload to TestFlight (Dev)
+        run: bundle exec fastlane ios dev
+        working-directory: ios
+
+      # ✅ 10. Clean up keychain and profiles
+      - name: 🧹 Clean up keychain and profiles
+        if: always()
+        run: |
+          security delete-keychain build.keychain || true
+          rm -f certificate.p12 *.mobileprovision
+
+  # ------------------------
+  # 🍎 iOS Dev Job
+  # ------------------------
+  # ios-dev:
+  #   name: 🍎 iOS Dev
+  #   runs-on: macos-latest
+
+  #   steps:
+  #     # ✅ 1. Checkout code
+  #     - name: 🔄 Checkout code
+  #       uses: actions/checkout@v4
+
+  #     # ✅ 2. List all available Xcode versions
+  #     - name: 📍 List available Xcode versions
+  #       run: ls -la /Applications | grep Xcode
+
+  #     # ✅ 3. Select Xcode version
+  #     - name: 📍 Select Xcode 16.2
+  #       # Ensure this path is correct for the runner image. You might want to use `xcode-select -p` to verify.
+  #       run: sudo xcode-select -switch /Applications/Xcode_16.2.app/Contents/Developer
+
+  #     # ✅ 4. Setup Flutter
+  #     - name: 🧩 Setup Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: ${{ env.FLUTTER_VERSION }}
+
+  #     # **CRITICAL FIX: Ensure consistent Ruby environment from setup-ruby, minimal caching from action**
+  #     - name: 💎 Set up Ruby
+  #       uses: ruby/setup-ruby@v1
+  #       with:
+  #         ruby-version: '3.3' # Pin to a specific minor version for stability
+  #         bundler-cache: false # We will manage Bundler installation and caching manually
+  #         # Add `in-place: true` if you have a Gemfile at the root, otherwise skip.
+  #         # It ensures gems are installed directly into the system's gem path, which is usually writable by the action.
+  #         # This can sometimes conflict if `bundle install --path` is also used later.
+  #         # Let's rely on `bundle install --path` being the primary method for Fastlane gems.
+
+  #     # ✅ 5. Install Flutter dependencies
+  #     - name: 📦 Install Flutter dependencies
+  #       run: flutter pub get
+
+  #     # **CRITICAL FIX: Aggressive Gemfile cleanup and re-installation within the `ios` directory**
+  #     - name: 🧠 Clean and Install Fastlane dependencies with Bundler
+  #       working-directory: ios
+  #       run: |
+  #         echo "Cleaning up existing Ruby/Bundler environment in ios/..."
+  #         # Remove any potentially conflicting Bundler configuration
+  #         rm -rf .bundle || true
+  #         # Remove the Gemfile.lock to force a fresh resolution
+  #         rm -f Gemfile.lock || true
+  #         # Remove the vendor/bundle directory to ensure a completely fresh install
+  #         rm -rf vendor/bundle || true
+
+  #         # Install Bundler. `setup-ruby` sets up the environment to make this writable.
+  #         gem install bundler --no-document
+
+  #         # Explicitly install ffi, as it's a common native extension dependency
+  #         gem install ffi --no-document
+
+  #         echo "Running bundle install to resolve and install all dependencies..."
+  #         # This will now include cocoapods since it's added to Gemfile
+  #         bundle install --jobs 4 --retry 3 --path vendor/bundle
+
+  #     # **Revised CocoaPods Installation**
+  #     - name: 🍫 Install CocoaPods dependencies
+  #       working-directory: ios # Important: Run `pod install` from the `ios` directory where your Podfile resides.
+  #       run: |
+  #         echo "Running bundle exec pod install..."
+  #         bundle exec pod install --repo-update
+          
+  #     # ✅ 7. Install provisioning & certificate (Dev)
+  #     - name: 🔐 Install provisioning & certificate (Dev)
+  #       run: |
+  #         echo "📦 Decoding certificate and provisioning profile..."
+
+  #         echo "${{ secrets.IOS_DISTRIBUTION_CERTIFICATE }}" | base64 --decode > certificate.p12
+  #         echo "${{ secrets.IOS_PROVISIONING_PROFILE_DEV }}" | base64 --decode > dev.mobileprovision
+
+  #         echo "🔑 Creating custom keychain..."
+  #         security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain
+  #         security set-keychain-settings -t 3600 -u build.keychain
+  #         security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain
+
+  #         echo "📥 Importing certificate into keychain..."
+  #         security import certificate.p12 -k build.keychain -P "${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
+  #         security list-keychains -s build.keychain
+  #         security set-key-partition-list -S apple-tool:,apple: -s -k "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain
+
+  #         echo "📄 Extracting UUID from provisioning profile..."
+  #         UUID=$(grep -a -A1 UUID dev.mobileprovision | grep -io "[-A-F0-9]\{36\}" | head -1)
+  #         echo "📄 Extracted UUID: $UUID"
+
+  #         echo "$UUID" > uuid.txt  # ✅ حفظ UUID في ملف مؤقت
+
+  #         echo "📂 Copying provisioning profile to system path..."
+  #         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+  #         cp dev.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/$UUID.mobileprovision
+
+  #         echo "✅ Provisioning and certificate setup completed!"
+
+  #     - name: 🔍 Verify Signing Setup
+  #       run: |
+  #         security find-identity -v build.keychain
+  #         ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/
+
+  #     # ✅ 8. Upload to TestFlight (Dev)
+  #     - name: 🚀 Upload to TestFlight (Dev)
+  #       # Ensure Fastlane is run with `bundle exec` and from the correct working directory
+  #       run: bundle exec fastlane ios dev
+  #       working-directory: ios # Important: Run Fastlane from the directory containing your Fastfile
+
+  #     # ✅ 9. Clean up keychain and profiles
+  #     - name: 🧹 Clean up keychain and profiles
+  #       if: always()
+  #       run: |
+  #         security delete-keychain build.keychain || true
+  #         rm -f certificate.p12 *.mobileprovision
+
+  # # ------------------------
+  # # 🍎 iOS Stage Job
+  # # ------------------------
+  # ios-stage:
+  #   name: 🍎 iOS Stage
+  #   runs-on: macos-latest
+
+  #   steps:
+  #     # ✅ 1. Checkout code
+  #     - name: 🔄 Checkout code
+  #       uses: actions/checkout@v4
+
+  #     # ✅ 2. List all available Xcode versions 
+  #     - name: 📍 List available Xcode versions
+  #       run: ls -la /Applications | grep Xcode
+
+  #     # ✅ 3. Select Xcode version
+  #     - name: 📍 Select Xcode 16.2
+  #       run: sudo xcode-select -switch /Applications/Xcode_16.2.app/Contents/Developer
+
+  #     # ✅ 4. Setup Flutter
+  #     - name: 🧩 Setup Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: ${{ env.FLUTTER_VERSION }}
+
+  #     # ✅ 5. Install dependencies
+  #     - name: 📦 Install dependencies
+  #       run: flutter pub get
+
+  #     # ✅ 6. Install CocoaPods
+  #     - name: 🍫 Install CocoaPods
+  #       run: |
+  #         sudo gem install cocoapods
+  #         cd ios
+  #         pod install
+  #         cd ..
+
+  #     # ✅ 7. Install provisioning & certificate (Stage)
+  #     - name: 🔐 Install provisioning & certificate (Stage)
+  #       run: |
+  #         echo "${{ secrets.IOS_DISTRIBUTION_CERTIFICATE }}" | base64 --decode > certificate.p12
+  #         echo "${{ secrets.IOS_PROVISIONING_PROFILE_STAGE }}" | base64 --decode > stage.mobileprovision
+  #         security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain
+  #         security default-keychain -s build.keychain
+  #         security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain
+  #         security import certificate.p12 -k build.keychain -P "${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
+  #         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+  #         cp stage.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+
+  #     # ✅ 8. Install bundler & fastlane
+  #     - name: 🧠 Install bundler & fastlane
+  #       run: |
+  #         gem install bundler
+  #         bundle install
+  #       working-directory: ios
+     
+  #     # ✅ 9. Upload to TestFlight (Stage)
+  #     - name: 🚀 Upload to TestFlight (Stage)
+  #       run: bundle exec fastlane ios stage
+  #       working-directory: ios
+
+  #     # ✅ 10. Clean up keychain and profiles
+  #     - name: 🧹 Clean up keychain and profiles
+  #       if: always()
+  #       run: |
+  #         security delete-keychain build.keychain || true
+  #         rm -f certificate.p12 *.mobileprovision
+
+  # # ------------------------
+  # # 🍎 iOS Prod Job
+  # # ------------------------
+  # ios-prod:
+  #   name: 🍎 iOS Prod
+  #   runs-on: macos-latest
+
+  #   steps:
+  #     # ✅ 1. Checkout code
+  #     - name: 🔄 Checkout code
+  #       uses: actions/checkout@v4
+
+  #     # ✅ 2. List all available Xcode versions 
+  #     - name: 📍 List available Xcode versions
+  #       run: ls -la /Applications | grep Xcode
+
+  #     # ✅ 3. Select Xcode version
+  #     - name: 📍 Select Xcode 16.2
+  #       run: sudo xcode-select -switch /Applications/Xcode_16.2.app/Contents/Developer
+
+  #     # ✅ 4. Setup Flutter
+  #     - name: 🧩 Setup Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: ${{ env.FLUTTER_VERSION }}
+
+  #     # ✅ 5. Install dependencies
+  #     - name: 📦 Install dependencies
+  #       run: flutter pub get
+
+  #     # ✅ 6. Install CocoaPods
+  #     - name: 🍫 Install CocoaPods
+  #       run: |
+  #         sudo gem install cocoapods
+  #         cd ios
+  #         pod install
+  #         cd ..
+
+  #     # ✅ 7. Install provisioning & certificate (Prod)
+  #     - name: 🔐 Install provisioning & certificate (Prod)
+  #       run: |
+  #         echo "${{ secrets.IOS_DISTRIBUTION_CERTIFICATE }}" | base64 --decode > certificate.p12
+  #         echo "${{ secrets.IOS_PROVISIONING_PROFILE_PROD }}" | base64 --decode > prod.mobileprovision
+  #         security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain
+  #         security default-keychain -s build.keychain
+  #         security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain
+  #         security import certificate.p12 -k build.keychain -P "${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
+  #         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+  #         cp prod.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+
+  #     # ✅ 8. Install bundler & fastlane
+  #     - name: 🧠 Install bundler & fastlane
+  #       run: |
+  #         gem install bundler
+  #         bundle install
+  #       working-directory: ios
+     
+  #     # ✅ 9. Upload to TestFlight (Prod)
+  #     - name: 🚀 Upload to TestFlight (Prod)
+  #       run: bundle exec fastlane ios prod
+  #       working-directory: ios
+
+  #     # ✅ 10. Clean up keychain and profiles
+  #     - name: 🧹 Clean up keychain and profiles
+  #       if: always()
+  #       run: |
+  #         security delete-keychain build.keychain || true
+  #         rm -f certificate.p12 *.mobileprovision
+
+  # ------------------------
+  # 🤖 Android Dev Job
+  # ------------------------
+  # android-dev:
+  #   name: 🤖 Android Dev
+  #   runs-on: macos-latest
+
+  #   steps:
+  #     # ✅ 1. Checkout code
+  #     - name: 🔄 Checkout code
+  #       uses: actions/checkout@v4
+
+  #     # ✅ 2. Setup Flutter
+  #     - name: 🧩 Setup Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: ${{ env.FLUTTER_VERSION }}
+
+  #     # ✅ 3. Install dependencies
+  #     - name: 📦 Install dependencies
+  #       run: flutter pub get
+
+  #     # # ✅ 4. Run static analysis
+  #     # - name: 🔍 Analyze code
+  #     #   run: flutter analyze
+
+  #     # # ✅ 5. Run unit tests
+  #     # - name: ✅ Run unit tests
+  #     #   run: flutter test
+
+  #     # ✅ 6. Android Signing & Firebase Setup
+  #     - name: 🔐 Android signing & Firebase setup
+  #       run: |
+  #         echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
+  #         echo "${{ secrets.KEYSTORE }}" | base64 --decode > android/app/key.jks
+  #         echo "${{ secrets.ANDROID_GOOGLE_SERVICE_JSON }}" | base64 --decode > android/app/google-services.json
+  #         echo "${{ secrets.FIREBASE_DISTRIBUTION_SERVICE }}" | base64 --decode > android/firebase-service-account.json
+  #         echo "${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}" | base64 --decode > android/google-play-service-account.json
+
+  #     # ✅ 7. Build APK for Dev
+  #     - name: 🛠️ Build APK for Dev
+  #       run: flutter build apk --release --flavor dev
+
+  #     # ✅ 8. Install bundler & fastlane
+  #     - name: 🧠 Install bundler & fastlane
+  #       run: |
+  #         gem install bundler
+  #         bundle install
+  #       working-directory: android
+
+  #     # ✅ 9. Upload APK for Dev on Github workflow
+  #     - name: 📤 Upload Dev APK
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: release-dev-apk-${{ github.run_number }}
+  #         path: build/app/outputs/flutter-apk/app-dev-release.apk
+
+  #     # ✅ 10. Upload to Firebase App Distribution
+  #     - name: 🚀 Upload to Firebase App Distribution (Dev)
+  #       run: bundle exec fastlane firebase_dev
+  #       working-directory: android
+  #       env:
+  #         FIREBASE_APP_ID_ANDROID_DEV: ${{ secrets.FIREBASE_APP_ID_ANDROID_DEV }}
+  #         GOOGLE_APPLICATION_CREDENTIALS: firebase-service-account.json
+
+  # # ------------------------
+  # # 🤖 Android Stage Job
+  # # ------------------------
+  # android-stage:
+  #   name: 🤖 Android Stage
+  #   runs-on: macos-latest
+
+  #   steps:
+  #     # ✅ 1. Checkout code
+  #     - name: 🔄 Checkout code
+  #       uses: actions/checkout@v4
+
+  #     # ✅ 2. Setup Flutter
+  #     - name: 🧩 Setup Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: ${{ env.FLUTTER_VERSION }}
+
+  #     # ✅ 3. Install dependencies
+  #     - name: 📦 Install dependencies
+  #       run: flutter pub get
+      
+  #     # # ✅ 4. Run static analysis
+  #     # - name: 🔍 Analyze code
+  #     #   run: flutter analyze
+
+  #     # # ✅ 5. Run unit tests
+  #     # - name: ✅ Run unit tests
+  #     #   run: flutter test
+
+  #     # ✅ 6. Android Signing & Firebase Setup
+  #     - name: 🔐 Android signing & Firebase setup
+  #       run: |
+  #         echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
+  #         echo "${{ secrets.KEYSTORE }}" | base64 --decode > android/app/key.jks
+  #         echo "${{ secrets.ANDROID_GOOGLE_SERVICE_JSON }}" | base64 --decode > android/app/google-services.json
+  #         echo "${{ secrets.FIREBASE_DISTRIBUTION_SERVICE }}" | base64 --decode > android/firebase-service-account.json
+  #         echo "${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}" | base64 --decode > android/google-play-service-account.json
+
+  #     # ✅ 7. Build APK for Stage
+  #     - name: 🛠️ Build APK for Stage
+  #       run: flutter build apk --release --flavor stage
+
+  #     # ✅ 8. Install bundler & fastlane
+  #     - name: 🧠 Install bundler & fastlane
+  #       run: |
+  #         gem install bundler
+  #         bundle install
+  #       working-directory: android
+
+  #     # ✅ 9. Upload APK for Stage on Github workflow
+  #     - name: 📤 Upload Stage APK
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: release-stage-apk-${{ github.run_number }}
+  #         path: build/app/outputs/flutter-apk/app-stage-release.apk
+
+  #     # ✅ 10. Upload to Firebase App Distribution
+  #     - name: 🚀 Upload to Firebase App Distribution (Stage)
+  #       run: bundle exec fastlane firebase_stage
+  #       working-directory: android
+  #       env:
+  #         FIREBASE_APP_ID_ANDROID_STAGE: ${{ secrets.FIREBASE_APP_ID_ANDROID_STAGE }}
+  #         GOOGLE_APPLICATION_CREDENTIALS: firebase-service-account.json
+
+  # # ------------------------
+  # # 🤖 Android Prod Job
+  # # ------------------------
+  # android-prod:
+  #   name: 🤖 Android Prod
+  #   runs-on: macos-latest
+
+  #   steps:
+  #     # ✅ 1. Checkout code
+  #     - name: 🔄 Checkout code
+  #       uses: actions/checkout@v4
+
+  #     # ✅ 2. Setup Flutter
+  #     - name: 🧩 Setup Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: ${{ env.FLUTTER_VERSION }}
+
+  #     # ✅ 3. Install dependencies
+  #     - name: 📦 Install dependencies
+  #       run: flutter pub get
+
+  #     # # ✅ 4. Run static analysis
+  #     # - name: 🔍 Analyze code
+  #     #   run: flutter analyze
+
+  #     # # ✅ 5. Run unit tests
+  #     # - name: ✅ Run unit tests
+  #     #   run: flutter test
+
+  #     # ✅ 7. Android Signing & Firebase Setup
+  #     - name: 🔐 Android signing & Firebase setup
+  #       run: |
+  #         echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
+  #         echo "${{ secrets.KEYSTORE }}" | base64 --decode > android/app/key.jks
+  #         echo "${{ secrets.ANDROID_GOOGLE_SERVICE_JSON }}" | base64 --decode > android/app/google-services.json
+  #         echo "${{ secrets.FIREBASE_DISTRIBUTION_SERVICE }}" | base64 --decode > android/firebase-service-account.json
+  #         echo "${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}" | base64 --decode > android/google-play-service-account.json
+
+  #     # ✅ 8. Build APK for Prod
+  #     - name: 🛠️ Build APK for Prod
+  #       run: flutter build apk --release --flavor prod
+
+  #     # ✅ 8. Upload APK for Prod on Github workflow
+  #     - name: 📤 Upload Prod APK
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: release-prod-apk-${{ github.run_number }}
+  #         path: build/app/outputs/flutter-apk/app-prod-release.apk
+
+  #     # ✅ 9. Install bundler & fastlane
+  #     - name: 🧠 Install bundler & fastlane
+  #       run: |
+  #         gem install bundler
+  #         bundle install
+  #       working-directory: android
+
+  #     # ✅ 10. Upload to Firebase App Distribution
+  #     - name: 🚀 Upload to Firebase App Distribution (Prod)
+  #       run: bundle exec fastlane firebase_prod
+  #       working-directory: android
+  #       env:
+  #         FIREBASE_APP_ID_ANDROID_PROD: ${{ secrets.FIREBASE_APP_ID_ANDROID_PROD }}
+  #         GOOGLE_APPLICATION_CREDENTIALS: firebase-service-account.json
+      
+  #     # ✅ 11. Build AAB for Prod
+  #     - name: 🛠️ Build AAB for Prod
+  #       run: flutter build appbundle  --flavor prod
+
+  #     # # ✅ 12. Upload to Google Play
+  #     # - name: 📤 Upload to Google Play
+  #     #   run: bundle exec fastlane release_prod
+  #     #   working-directory: android
+
