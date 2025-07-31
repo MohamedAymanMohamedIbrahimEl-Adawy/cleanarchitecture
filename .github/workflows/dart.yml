@@ -45,7 +45,8 @@ jobs:
         working-directory: ios
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          MATCH_GIT_URL: git@github.com:MohamedAymanMohamedIbrahimEl-Adawy/fastlane-certificates.git
+          MATCH_GIT_URL: https://github.com/MohamedAymanMohamedIbrahimEl-Adawy/fastlane-certificates
+          MATCH_TYPE: appstore
 
   ios-stage:
     name: 🍎 iOS Stage
@@ -81,7 +82,8 @@ jobs:
         working-directory: ios
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          MATCH_GIT_URL: git@github.com:MohamedAymanMohamedIbrahimEl-Adawy/fastlane-certificates.git
+          MATCH_GIT_URL: https://github.com/MohamedAymanMohamedIbrahimEl-Adawy/fastlane-certificates
+          MATCH_TYPE: appstore
 
   ios-prod:
     name: 🍎 iOS Prod
@@ -117,4 +119,5 @@ jobs:
         working-directory: ios
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          MATCH_GIT_URL: git@github.com:MohamedAymanMohamedIbrahimEl-Adawy/fastlane-certificates.git
+          MATCH_GIT_URL: https://github.com/MohamedAymanMohamedIbrahimEl-Adawy/fastlane-certificates
+          MATCH_TYPE: appstore
