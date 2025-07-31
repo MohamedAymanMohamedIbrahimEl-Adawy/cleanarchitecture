@@ -42,6 +42,7 @@ jobs:
 
       - name: 🛠️ Run Fastlane for Dev
         run: fastlane ios dev
+        working-directory: ios
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           MATCH_GIT_URL: git@github.com:MohamedAymanMohamedIbrahimEl-Adawy/fastlane-certificates.git
@@ -77,6 +78,7 @@ jobs:
 
       - name: 🛠️ Run Fastlane for Stage
         run: fastlane ios stage
+        working-directory: ios
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           MATCH_GIT_URL: git@github.com:MohamedAymanMohamedIbrahimEl-Adawy/fastlane-certificates.git
@@ -112,6 +114,7 @@ jobs:
 
       - name: 🛠️ Run Fastlane for Prod
         run: fastlane ios prod
+        working-directory: ios
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           MATCH_GIT_URL: git@github.com:MohamedAymanMohamedIbrahimEl-Adawy/fastlane-certificates.git
