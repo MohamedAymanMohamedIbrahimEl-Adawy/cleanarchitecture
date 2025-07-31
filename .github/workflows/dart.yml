@@ -9,17 +9,19 @@ on:
 env:
   FLUTTER_VERSION: "3.32.8"
 
-
 jobs:
-  ios-dev:
-    name: 🍎 iOS Dev
+  ios-build:
+    name: 🍏 iOS Build (${{ matrix.flavor }})
     runs-on: macos-latest
+
+    strategy:
+      matrix:
+        flavor: [dev, stage, prod]
 
     steps:
       - name: 🔄 Checkout code
         uses: actions/checkout@v4
 
-      # ✅ 4. Setup Flutter
       - name: 🧩 Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -40,84 +42,10 @@ jobs:
       - name: 🚀 Install Fastlane
         run: gem install fastlane
 
-      - name: 🛠️ Run Fastlane for Dev
-        run: fastlane ios dev
+      - name: 🛠️ Run Fastlane for ${{ matrix.flavor }}
+        run: fastlane ios ${{ matrix.flavor }}
         working-directory: ios
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          MATCH_GIT_URL: https://github.com/MohamedAymanMohamedIbrahimEl-Adawy/fastlane-certificates
-          MATCH_TYPE: appstore
-
-  ios-stage:
-    name: 🍎 iOS Stage
-    runs-on: macos-latest
-
-    steps:
-      - name: 🔄 Checkout code
-        uses: actions/checkout@v4
-
-      # ✅ 4. Setup Flutter
-      - name: 🧩 Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-
-      - name: 🔐 Setup SSH key for match
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.MATCH_GIT_PRIVATE_KEY }}" | base64 --decode > ~/.ssh/match_fastlane
-          chmod 600 ~/.ssh/match_fastlane
-          echo "Host github.com\n  IdentityFile ~/.ssh/match_fastlane\n  StrictHostKeyChecking no" >> ~/.ssh/config
-
-      - name: 📥 Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.1'
-
-      - name: 🚀 Install Fastlane
-        run: gem install fastlane
-
-      - name: 🛠️ Run Fastlane for Stage
-        run: fastlane ios stage
-        working-directory: ios
-        env:
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          MATCH_GIT_URL: https://github.com/MohamedAymanMohamedIbrahimEl-Adawy/fastlane-certificates
-          MATCH_TYPE: appstore
-
-  ios-prod:
-    name: 🍎 iOS Prod
-    runs-on: macos-latest
-
-    steps:
-      - name: 🔄 Checkout code
-        uses: actions/checkout@v4
-        
-      # ✅ 4. Setup Flutter
-      - name: 🧩 Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-
-      - name: 🔐 Setup SSH key for match
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.MATCH_GIT_PRIVATE_KEY }}" | base64 --decode > ~/.ssh/match_fastlane
-          chmod 600 ~/.ssh/match_fastlane
-          echo "Host github.com\n  IdentityFile ~/.ssh/match_fastlane\n  StrictHostKeyChecking no" >> ~/.ssh/config
-
-      - name: 📥 Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.1'
-
-      - name: 🚀 Install Fastlane
-        run: gem install fastlane
-
-      - name: 🛠️ Run Fastlane for Prod
-        run: fastlane ios prod
-        working-directory: ios
-        env:
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          MATCH_GIT_URL: https://github.com/MohamedAymanMohamedIbrahimEl-Adawy/fastlane-certificates
+          MATCH_GIT_URL: git@github.com:MohamedAymanMohamedIbrahimEl-Adawy/fastlane-certificates.git
           MATCH_TYPE: appstore
